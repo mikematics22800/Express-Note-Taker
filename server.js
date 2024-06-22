@@ -17,7 +17,7 @@ app.get('/notes', (req, res) =>
   res.sendFile(path.join(__dirname, 'public/notes.html')
 ));
 
-// Send notes in response to get requests to /api/notes
+// Send notes in response to GET request
 app.get('/api/notes', (req, res) => {
   fs.readFile(path.join(__dirname, 'notes.json'), (err, data) => {
     if (err) throw err;
@@ -31,7 +31,7 @@ app.get('*', (req, res) =>
   res.sendFile(path.join(__dirname, 'public/index.html')
 ));
 
-// Add note in response to post requests to /api/notes
+// Add note in response to POST request
 app.post('/api/notes', (req, res) => {
   const newNote = { ...req.body, id: uniqid() }; // Add a unique ID to the new note
   fs.readFile(path.join(__dirname, 'notes.json'), (err, data) => {
@@ -45,7 +45,7 @@ app.post('/api/notes', (req, res) => {
   });
 });
 
-// Delete note with id in response to delete requests to /api/notes/:id
+// Delete note in response to DELETE request
 app.delete('/api/notes/:id', (req, res) => {
   const id = req.params.id; 
   fs.readFile(path.join(__dirname, 'notes.json'), (err, data) => {

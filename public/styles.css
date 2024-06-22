@@ -76,13 +76,14 @@ body {
 .list-container .list-group-item {
   border-left: none;
   border-right: none;
-  padding: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 20px;
 }
 
-.delete-note {
+.delete-note-btn {
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -92,7 +93,7 @@ body {
   align-items: center;
 }
 
-.delete-note:hover {
+.delete-note-btn:hover {
   background-color: #f8d7da;
 }
 
