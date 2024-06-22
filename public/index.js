@@ -5,7 +5,9 @@ if (window.location.pathname === '/notes') {
   let saveNoteBtn;
   let newNoteBtn;
   let noteList;
+  let noNotes;
 
+  // Declare DOM element references
   noteForm = document.querySelector('.note-form');
   noteTitle = document.querySelector('.note-title');
   noteText = document.querySelector('.note-textarea');
@@ -13,6 +15,7 @@ if (window.location.pathname === '/notes') {
   newNoteBtn = document.querySelector('.new-note');
   clearBtn = document.querySelector('.clear-btn');
   noteList = document.querySelectorAll('.list-group');
+  noNotes = document.querySelector('.no-notes');
 
   // Show an element
   const show = (elem) => {
@@ -24,6 +27,9 @@ if (window.location.pathname === '/notes') {
     elem.style.display = 'none';
   };
 
+  // Initialize notes array
+  let notes = []
+
   // GET request promise
   const getNotes = async () => {
     try {
@@ -33,21 +39,16 @@ if (window.location.pathname === '/notes') {
           'Content-Type': 'application/json'
         }
       });
-      const notes = await response.json();
-      return notes
+      notes = await response.json(); // Parse JSON response to notes array
     } catch (err) {
       console.error(err);
     }
   };
 
-  let notesArray
-
-  // Render list of notes and update notesArray
+  // Render list of notes with unique ids and select/delete event listeners
   const renderNoteList = (notes) => {
     if (notes.length > 0) {
-      notesArray = notes
-      const empty = document.querySelector('.empty');
-      hide(empty);
+      hide(noNotes);
       noteList.forEach((el) => (el.innerHTML = ''));
       // Returns HTML element with or without a delete button
       const createListItem = (note, delBtn = true) => {
@@ -57,7 +58,7 @@ if (window.location.pathname === '/notes') {
         li.addEventListener('click', selectNote);
         const span = document.createElement('span');
         span.classList.add('list-item-title');
-        span.innerText = note.text;  
+        span.innerText = note.title;  
         li.append(span);
         if (delBtn) {
           const delBtnEl = document.createElement('i');
@@ -77,34 +78,35 @@ if (window.location.pathname === '/notes') {
 
       const noteListItems = notes.map((note) => createListItem(note));
       noteListItems.forEach((note) => noteList[0].append(note));
-    };
+    } else {
+      show(noNotes);
+    }
   }
 
   // Once GET request promise is fulfilled, render notes list
   const getAndRenderNotes = () => {
-    getNotes().then((notes) => renderNoteList(notes));
+    getNotes().then(() => renderNoteList(notes));
   }
 
-  // Get and render notes when page loads
-  getAndRenderNotes();
+  getAndRenderNotes(); // Get and render notes when page loads
 
   // POST request promise
   const saveNote = async (note) => {
     try {
-      fetch('/api/notes', {
+      await fetch('/api/notes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(note)
-      })
-    } catch {
+        body: JSON.stringify(note) // Send note object as JSON string to add
+      });
+    } catch (err) {
       console.error(err);
     }
   }
 
   // Once POST request promise is fulfilled, add note and update list
-  const handleNoteSave = () => {
+  const handleNoteSave = async () => {
     const newNote = {
       title: noteTitle.value,
       text: noteText.value
@@ -121,36 +123,38 @@ if (window.location.pathname === '/notes') {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
-        }
-      })
-    } catch {
+        },
+        body: JSON.stringify(notes) // Send note object as JSON string to delete
+      });
+    } catch (err) {
       console.error(err);
     }
   }
 
   // Once DELETE request promise is fulfilled, delete note and update list
   const handleNoteDelete = (e) => {
-    // Prevents the click listener for the list from being called when the button inside of it is clicked
-    e.stopPropagation();
-    const id = e.target.parentElement.getAttribute('id')
+    e.stopPropagation(); // Prevents the click listener for the list from being called when the button inside of it is clicked
+    const id = e.target.parentElement.getAttribute('id') // Get note id from parent list item attributes
     deleteNote(id).then(() => {
       getAndRenderNotes();
-      selectNote();
+      selectNote(e);
     });
   };
 
   // Render selected note
   const selectNote = (e) => {
-    const id = e.target.getAttribute('id')
+    const id = e.target.getAttribute('id') // Get note id from list item attributes
+    // If no id is found, write new note
     if (id) {
       hide(clearBtn);
       hide(saveNoteBtn);
       show(newNoteBtn);
       noteTitle.setAttribute('readonly', true);
       noteText.setAttribute('readonly', true);
-      const note = notesArray.find(note => note.id === id)
+      const note = notes.find(note => note.id === id)
       noteTitle.value = note.title;
       noteText.value = note.text;
+    // If id is found, display note
     } else {
       hide(newNoteBtn);
       noteTitle.removeAttribute('readonly');
@@ -172,7 +176,7 @@ if (window.location.pathname === '/notes') {
     }
   };
 
-  // Add event listeners
+  // Add event listeners for note input and submission
   saveNoteBtn.addEventListener('click', handleNoteSave);
   noteForm.addEventListener('input', handleRenderBtns);
   newNoteBtn.addEventListener('click', selectNote);
