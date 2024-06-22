@@ -28,7 +28,7 @@ const hide = (elem) => {
 // activeNote is used to keep track of the note in the textarea
 let activeNote = {};
 
-// Promise to handle fetch request to get notes.json
+// GET request promise
 const getNotes = async () => {
   try {
     const response = await fetch('/api/notes', {
@@ -44,7 +44,7 @@ const getNotes = async () => {
   }
 };
 
-// Destructure notes.json and render list of notes to the sidebar
+// Render list of notes
 const renderNoteList = (notes) => {
   if (window.location.pathname === '/notes') {
     noteList.forEach((el) => (el.innerHTML = ''));
@@ -95,15 +95,15 @@ const renderNoteList = (notes) => {
 };
 
 
+// Once GET request promise is fulfilled, render notes
 const getAndRenderNotes = () => {
   getNotes().then((notes) => renderNoteList(notes));
 }
 
-// Get and render notes when the page loads
+// Get and render notes when page loads
 getAndRenderNotes();
 
-
-// Promise to handle post request to add note to notes.json
+// POST request promise
 const saveNote = async (note) => {
   try {
     fetch('/api/notes', {
@@ -118,7 +118,7 @@ const saveNote = async (note) => {
   }
 }
 
-// Make new note from user inputs and add to notes.json
+// Once POST request promise is fulfilled, add note
 const handleNoteSave = () => {
   const newNote = {
     title: noteTitle.value,
@@ -130,14 +130,39 @@ const handleNoteSave = () => {
   });
 };
 
-const deleteNote = (id) =>
-  fetch(`/api/notes/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+// DELETE request promise
+const deleteNote = async (id) => {
+  try {
+    fetch(`/api/notes/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  } catch {
+    console.error(err);
+  }
+}
 
+// Once DELETE request promise is fulfilled, delete note with provided ID
+const handleNoteDelete = (e) => {
+  // Prevents the click listener for the list from being called when the button inside of it is clicked
+  e.stopPropagation();
+
+  const note = e.target;
+  const noteId = JSON.parse(note.parentElement.getAttribute('data-note')).id;
+
+  if (activeNote.id === noteId) {
+    activeNote = {};
+  }
+
+  deleteNote(noteId).then(() => {
+    getAndRenderNotes();
+    renderActiveNote();
+  });
+};
+
+// Render selected note
 const renderActiveNote = () => {
   hide(saveNoteBtn);
   hide(clearBtn);
@@ -155,24 +180,6 @@ const renderActiveNote = () => {
     noteTitle.value = '';
     noteText.value = '';
   }
-};
-
-// Delete the clicked note
-const handleNoteDelete = (e) => {
-  // Prevents the click listener for the list from being called when the button inside of it is clicked
-  e.stopPropagation();
-
-  const note = e.target;
-  const noteId = JSON.parse(note.parentElement.getAttribute('data-note')).id;
-
-  if (activeNote.id === noteId) {
-    activeNote = {};
-  }
-
-  deleteNote(noteId).then(() => {
-    getAndRenderNotes();
-    renderActiveNote();
-  });
 };
 
 // Sets the activeNote and displays it
