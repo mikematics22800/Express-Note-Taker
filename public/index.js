@@ -113,6 +113,8 @@ if (window.location.pathname === '/notes') {
     };
     saveNote(newNote).then(() => {
       getAndRenderNotes();
+      noteTitle.value = '';
+      noteText.value = '';    
     });
   };
 
