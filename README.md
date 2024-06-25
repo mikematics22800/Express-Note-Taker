@@ -8,7 +8,7 @@
 - [License](#license)
 - [Questions](#questions)
 ## Description
-A node application that manages and dislays client information with backend CRUD operations.
+A node application that manages and displays client information with backend CRUD operations.
 ## Installation
 ```
 cd $directory

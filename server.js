@@ -19,7 +19,7 @@ app.get('/notes', (req, res) =>
 
 // Send notes in response to GET request
 app.get('/api/notes', (req, res) => {
-  fs.readFile(path.join(__dirname, 'notes.json'), (err, data) => {
+  fs.readFile(path.join(__dirname, 'db.json'), (err, data) => {
     if (err) throw err;
     const notes = JSON.parse(data);
     res.json(notes);
@@ -34,11 +34,11 @@ app.get('*', (req, res) =>
 // Add note in response to POST request
 app.post('/api/notes', (req, res) => {
   const newNote = { ...req.body, id: uniqid() }; // Add a unique ID to the new note
-  fs.readFile(path.join(__dirname, 'notes.json'), (err, data) => {
+  fs.readFile(path.join(__dirname, 'db.json'), (err, data) => {
     if (err) throw err;
     const db = JSON.parse(data);
     db.push(newNote); // Add the new note to the array
-    fs.writeFile(path.join(__dirname, 'notes.json'), JSON.stringify(db, null, 2), (err) => {
+    fs.writeFile(path.join(__dirname, 'db.json'), JSON.stringify(db, null, 2), (err) => {
       if (err) throw err;
       res.json(newNote); // Send the new note back to the client
     });
@@ -48,11 +48,11 @@ app.post('/api/notes', (req, res) => {
 // Delete note in response to DELETE request
 app.delete('/api/notes/:id', (req, res) => {
   const id = req.params.id; 
-  fs.readFile(path.join(__dirname, 'notes.json'), (err, data) => {
+  fs.readFile(path.join(__dirname, 'db.json'), (err, data) => {
     if (err) throw err;0
     const db = JSON.parse(data);
     const filteredDb = db.filter(note => note.id !== id); // Filter out the note with the specified ID
-    fs.writeFile(path.join(__dirname, 'notes.json'), JSON.stringify(filteredDb, null, 2), (err) => {
+    fs.writeFile(path.join(__dirname, 'db.json'), JSON.stringify(filteredDb, null, 2), (err) => {
       if (err) throw err;
       res.json({ id }); // Send the ID back to the client
     });
